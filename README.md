@@ -27,7 +27,8 @@ A lightweight, high-performance web application to procedurally generate island 
 ```text
 island-generator/
 ├── index.html     # Complete web application (HTML, CSS, JS & Canvas rendering)
-├── favicon.png    # App logo and favicon asset
+├── assets/         # App logo and favicon asset
+    └── favicon.png
 └── README.md      # Project documentation
 ```
 
