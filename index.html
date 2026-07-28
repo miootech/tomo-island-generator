@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Living the Dream — Island Map Generator</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" id="appFavicon">
+<style>
+  :root{
+    --cream: #FAF3E0;
+    --cream-card: #FFFDF7;
+    --gold: #F5BD26;
+    --gold-deep: #D99A1E;
+    --gold-bright: #FFD554;
+    --ink: #3A2E1F;
+    --ink-soft: #6B5B44;
+    --border-color: rgba(58,46,31,0.16);
+    --panel-shadow: 0 8px 24px rgba(217,154,30,0.12), 0 2px 6px rgba(58,46,31,0.06);
+    --radius: 20px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background: var(--cream);
+    background-image:
+      radial-gradient(circle at 12% 12%, rgba(245,189,38,0.15), transparent 40%),
+      radial-gradient(circle at 88% 88%, rgba(74,144,196,0.12), transparent 45%);
+    font-family: 'Trebuchet MS', 'Segoe UI Rounded', 'Nunito', system-ui, sans-serif;
+    color: var(--ink);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 24px 16px 40px;
+  }
+
+  header{ text-align:center; margin-bottom:20px; }
+  header .kicker{
+    letter-spacing: 2.5px; font-size: 11px; font-weight:800;
+    color: var(--gold-deep); text-transform:uppercase;
+    background: rgba(245,189,38,0.18);
+    padding: 4px 14px; border-radius: 999px;
+    display: inline-block; margin-bottom: 6px;
+  }
+  header h1{
+    margin: 4px 0 6px; font-size: 32px; letter-spacing: 0.5px;
+    display:flex; align-items:center; justify-content:center; gap: 10px;
+    text-shadow: 0 2px 0 #fff;
+  }
+  header h1 img.header-logo {
+    width: 42px; height: 42px; object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+  }
+  header p{ margin:0; color: var(--ink-soft); font-size: 14px; max-width: 560px; line-height: 1.4; font-weight: 600; }
+
+  .panel{
+    background: var(--cream-card);
+    border: 3px solid var(--gold);
+    border-radius: var(--radius);
+    box-shadow: var(--panel-shadow);
+    padding: 22px 26px;
+    width: 100%;
+    max-width: 980px;
+  }
+
+  .controls{
+    display:flex; flex-wrap:wrap; gap: 18px;
+    align-items:flex-end; margin-bottom: 12px;
+  }
+
+  .field{ display:flex; flex-direction:column; gap:6px; min-width: 170px; flex: 1; }
+  .field label{
+    font-size: 11.5px; font-weight:800; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display:flex; justify-content:space-between;
+  }
+  .field label .val{ color: var(--gold-deep); font-weight:900; }
+
+  select, input[type="range"]{ accent-color: var(--gold-deep); }
+
+  select{
+    padding: 9px 12px; border-radius: 12px;
+    border: 2px solid var(--border-color);
+    background: #fff; font-size: 14px; color: var(--ink);
+    font-family: inherit; font-weight: 700; cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  select:hover{ border-color: var(--gold-deep); }
+
+  input[type="range"]{ width: 100%; cursor: pointer; }
+
+  .toggle-field{ display:flex; flex-direction:column; gap:6px; min-width: 210px; }
+  .toggle-row{
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border:2px solid var(--border-color);
+    border-radius: 12px; padding: 8px 12px; height: 42px;
+    cursor: pointer; user-select: none;
+    transition: border-color 0.15s ease;
+  }
+  .toggle-row:hover{ border-color: var(--gold-deep); }
+  .toggle-row input{ width:18px; height:18px; flex-shrink:0; cursor: pointer; }
+  .toggle-row span{ font-size: 13px; color: var(--ink); font-weight: 700; }
+
+  .sub-slider-container{
+    display: none;
+    margin-top: 4px;
+    padding: 8px 12px;
+    background: #fff;
+    border: 2px solid var(--gold-deep);
+    border-radius: 12px;
+  }
+
+  .sub-slider-container label{
+    font-size: 11px; font-weight: 800; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    display: flex; justify-content: space-between; margin-bottom: 4px;
+  }
+  .sub-slider-container label .val{ color: var(--gold-deep); font-weight: 900; }
+
+  .buttons{ display:flex; gap: 10px; flex-wrap:wrap; margin-left:auto; }
+
+  button, .link-btn{
+    border:none; cursor:pointer; font-weight:800; font-size: 14px;
+    padding: 11px 22px; border-radius: 999px;
+    transition: transform 0.08s ease, filter 0.15s ease;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    font-family: inherit;
+  }
+
+  #generateBtn{
+    background: var(--gold); color: var(--ink);
+    box-shadow: 0 4px 0 var(--gold-deep);
+  }
+  #generateBtn:hover{ filter: brightness(1.06); }
+  #generateBtn:active{ transform: translateY(2px); box-shadow: 0 2px 0 var(--gold-deep); }
+
+  #exportBtn{
+    background: var(--ink); color: #fff8ea;
+    box-shadow: 0 4px 0 #201a10;
+  }
+  #exportBtn:hover{ filter: brightness(1.2); }
+  #exportBtn:active{ transform: translateY(2px); box-shadow: 0 2px 0 #201a10; }
+  #exportBtn:disabled{ background: #cfc4ac; color: #fff; box-shadow:none; cursor:not-allowed; filter:none; transform:none; }
+
+  .meta{ font-size: 13px; color: var(--ink-soft); font-weight: 700; }
+
+  .stage-container{
+    position: relative;
+    width: 100%;
+    max-width: 980px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .canvas-wrapper{
+    position: relative;
+    width: 100%;
+    height: 540px;
+    background: #4a90c4;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(58,46,31,0.18), 0 0 0 5px #fff8ea, 0 0 0 7px var(--gold-deep);
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+  .canvas-wrapper:active{ cursor: grabbing; }
+
+  #islandCanvas{
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  /* Floating Viewport Controls */
+  .viewport-controls{
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    display: flex;
+    gap: 6px;
+    background: rgba(255, 248, 234, 0.94);
+    backdrop-filter: blur(8px);
+    border: 2px solid var(--gold-deep);
+    border-radius: 999px;
+    padding: 4px 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.14);
+    z-index: 10;
+  }
+  .vp-btn{
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 900;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .vp-btn:hover{ background: rgba(240,180,41,0.3); }
+  .vp-info{
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--ink-soft);
+    padding: 0 6px;
+    min-width: 48px;
+    justify-content: center;
+  }
+
+  .canvas-hint{
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: rgba(255, 248, 234, 0.90);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(58,46,31,0.15);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--ink-soft);
+    pointer-events: none;
+  }
+
+  /* Mouse Grid Coordinates Badge in Lower-Left Corner */
+  .canvas-coords{
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(255, 248, 234, 0.94);
+    backdrop-filter: blur(8px);
+    border: 2px solid var(--gold-deep);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--ink);
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    font-family: monospace, system-ui, sans-serif;
+    z-index: 10;
+  }
+
+  .legend{
+    display:flex; gap: 20px; font-size: 13px; color: var(--ink-soft);
+    flex-wrap: wrap; justify-content:center; font-weight: 700;
+  }
+  .legend span{ display:inline-flex; align-items:center; gap: 7px; }
+  .swatch{ width:15px; height:15px; border-radius:4px; display:inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2); }
+
+  footer{
+    margin-top: 32px;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+    font-size: 12px; color: var(--ink-soft); text-align:center; max-width: 560px;
+    font-weight: 600;
+  }
+  .footer-links{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  .footer-links .link-btn{ font-size:13px; padding: 8px 16px; }
+  #instaLink{ background:#fff; color: var(--ink); border:2px solid rgba(58,46,31,0.2); }
+  #instaLink:hover{ background: #fff8ea; }
+  #paypalLink{ background:#ffcc33; color:#1a1a1a; box-shadow: 0 3px 0 #cc9f00; }
+  #paypalLink:hover{ filter: brightness(1.05); }
+
+  @media (max-width: 600px){
+    .buttons{ margin-left:0; width:100%; }
+    button{ flex:1; }
+    .canvas-wrapper{ height: 380px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">Living the Dream</div>
+  <h1><img src="assets/favicon.png" alt="Logo" class="header-logo" id="headerLogo"> Island Map Generator</h1>
+  <p>Shape the base layer of your island — ocean, organic sand beaches, and grass — then export to TomoDraft to start placing paths and buildings.</p>
+</header>
+
+<div class="panel">
+  <div class="controls">
+    <div class="field">
+      <label>Island Size / Mii Count</label>
+      <select id="sizeSelect">
+        <option value="0">Starting Island (48×34)</option>
+        <option value="1" selected>Small Island — approx. 8 Miis (68×48)</option>
+        <option value="2">Medium Island — approx. 20 Miis (88×68)</option>
+        <option value="3">Large Island — approx. 35+ Miis (118×78)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Water Percentage <span class="val" id="waterVal">45%</span></label>
+      <input type="range" id="waterSlider" min="1" max="90" step="1" value="45">
+    </div>
+
+    <div class="field">
+      <label>Island Size / Scale <span class="val" id="islandSizeVal">100%</span></label>
+      <input type="range" id="islandSizeSlider" min="50" max="150" step="5" value="100">
+    </div>
+
+    <div class="field">
+      <label>Sand / Beach Ratio <span class="val" id="beachWidthVal">5</span></label>
+      <input type="range" id="beachWidthSlider" min="1" max="10" step="1" value="5">
+    </div>
+
+    <div class="field">
+      <label>Number of Islands <span class="val" id="islandsVal">1</span></label>
+      <input type="range" id="islandsSlider" min="1" max="7" step="1" value="1">
+    </div>
+
+    <div class="field">
+      <label>Island Distance / Spacing <span class="val" id="spacingVal">5</span></label>
+      <input type="range" id="spacingSlider" min="1" max="10" step="1" value="5">
+    </div>
+
+    <div class="field">
+      <label>Coastline Smoothness <span class="val" id="smoothVal">6</span></label>
+      <input type="range" id="smoothSlider" min="0" max="10" step="1" value="6">
+    </div>
+
+    <div class="toggle-field">
+      <label>Beaches</label>
+      <label class="toggle-row">
+        <input type="checkbox" id="wideBeachToggle">
+        <span>Bigger Beaches / Organic Shores</span>
+      </label>
+      <div class="sub-slider-container" id="beachSliderContainer">
+        <label>Total Beaches <span class="val" id="beachCountVal">2 (Max 3)</span></label>
+        <input type="range" id="beachCountSlider" min="1" max="3" step="1" value="2">
+      </div>
+    </div>
+
+    <div class="toggle-field">
+      <label>Display</label>
+      <label class="toggle-row">
+        <input type="checkbox" id="gridToggle" checked>
+        <span>Show pixel grid overlay</span>
+      </label>
+    </div>
+
+    <div class="buttons">
+      <button id="generateBtn">🎲 Reroll Variation</button>
+      <button id="exportBtn" disabled>⬇ Export for TomoDraft (.json)</button>
+    </div>
+  </div>
+  <div class="meta" id="metaLine">Adjust any setting — the map updates instantly.</div>
+</div>
+
+<div class="stage-container">
+  <div class="canvas-wrapper" id="canvasWrapper">
+    <canvas id="islandCanvas"></canvas>
+    <div class="canvas-hint">🖱️ Drag to Pan · Scroll / Pinch to Zoom</div>
+    <div class="canvas-coords" id="coordsBadge">📍 X: --, Y: --</div>
+    <div class="viewport-controls">
+      <button class="vp-btn" id="zoomOutBtn" title="Zoom Out">−</button>
+      <div class="vp-info" id="zoomLevelText">100%</div>
+      <button class="vp-btn" id="zoomInBtn" title="Zoom In">+</button>
+      <button class="vp-btn" id="zoomResetBtn" title="Reset View & Center">⟲</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="swatch" style="background:#4a90c4"></span> Ocean</span>
+    <span><span class="swatch" style="background:#f2d16b"></span> Sandy Beach</span>
+    <span><span class="swatch" style="background:#7CFC00"></span> Grass</span>
+  </div>
+</div>
+
+<footer>
+  <div>This tool only builds the base terrain layer. Paths, buildings, and Miis are added afterward inside TomoDraft.</div>
+  <div class="footer-links">
+    <a class="link-btn" id="instaLink" href="https://instagram.com/malikali065" target="_blank" rel="noopener">📷 @malikali065</a>
+    <a class="link-btn" id="paypalLink" href="https://paypal.me/malikali06" target="_blank" rel="noopener">💛 Donate via PayPal</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const SIZES = [
+    { cols: 48,  rows: 34, label: "Starting Island (48×34)" },
+    { cols: 68,  rows: 48, label: "Small Island (68×48)" },
+    { cols: 88,  rows: 68, label: "Medium Island (88×68)" },
+    { cols: 118, rows: 78, label: "Large Island (118×78)" }
+  ];
+  const CELL_SIZE_EXPORT = 7; // "cs" field for TomoDraft
+  const CELL_RENDER_PX = 16;  // Native resolution per cell on offscreen canvas
+
+  const WATER = { type: "terrain", terrain: "ocean", color: "#4a90c4" };
+  const COAST = { type: "terrain", terrain: "beach", color: "#f2d16b" };
+  const LAND  = { type: "terrain", terrain: "grass", color: "#7CFC00" };
+
+  // DOM Elements
+  const sizeSelect           = document.getElementById('sizeSelect');
+  const waterSlider          = document.getElementById('waterSlider');
+  const islandSizeSlider     = document.getElementById('islandSizeSlider');
+  const islandSizeVal        = document.getElementById('islandSizeVal');
+  const beachWidthSlider     = document.getElementById('beachWidthSlider');
+  const beachWidthVal        = document.getElementById('beachWidthVal');
+  const islandsSlider        = document.getElementById('islandsSlider');
+  const spacingSlider        = document.getElementById('spacingSlider');
+  const spacingVal           = document.getElementById('spacingVal');
+  const smoothSlider         = document.getElementById('smoothSlider');
+  const wideBeachToggle      = document.getElementById('wideBeachToggle');
+  const beachSliderContainer = document.getElementById('beachSliderContainer');
+  const beachCountSlider     = document.getElementById('beachCountSlider');
+  const beachCountVal        = document.getElementById('beachCountVal');
+  const gridToggle           = document.getElementById('gridToggle');
+  const waterVal             = document.getElementById('waterVal');
+  const islandsVal           = document.getElementById('islandsVal');
+  const smoothVal            = document.getElementById('smoothVal');
+  const generateBtn          = document.getElementById('generateBtn');
+  const exportBtn            = document.getElementById('exportBtn');
+  const canvasWrapper        = document.getElementById('canvasWrapper');
+  const visibleCanvas        = document.getElementById('islandCanvas');
+  const ctx                  = visibleCanvas.getContext('2d');
+  const metaLine             = document.getElementById('metaLine');
+  const zoomInBtn            = document.getElementById('zoomInBtn');
+  const zoomOutBtn           = document.getElementById('zoomOutBtn');
+  const zoomResetBtn         = document.getElementById('zoomResetBtn');
+  const zoomLevelText        = document.getElementById('zoomLevelText');
+  const coordsBadge          = document.getElementById('coordsBadge');
+
+  // Offscreen Canvas Architecture
+  const offscreenCanvas = document.createElement('canvas');
+  const offscreenCtx    = offscreenCanvas.getContext('2d');
+
+  // State
+  let currentGrid = null;
+  let currentCols = 0, currentRows = 0;
+  let currentSeeds = [];
+  
+  // Viewport Transform State (Pan & Zoom)
+  let scale = 1.0;
+  let panX = 0, panY = 0;
+  let isDragging = false;
+  let dragStartX = 0, dragStartY = 0;
+
+  function rand(min, max){ return min + Math.random() * (max - min); }
+
+  // ---------------- Transparent Favicon Dynamic Generator ----------------
+  function makeFaviconTransparent(){
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width;
+      c.height = img.height;
+      const cCtx = c.getContext('2d');
+      cCtx.drawImage(img, 0, 0);
+      const imgData = cCtx.getImageData(0, 0, c.width, c.height);
+      const data = imgData.data;
+
+      for (let i = 0; i < data.length; i += 4){
+        const r = data[i], g = data[i+1], b = data[i+2];
+        if (r > 225 && g > 225 && b > 225){
+          data[i+3] = 0;
+        }
+      }
+      cCtx.putImageData(imgData, 0, 0);
+
+      const transparentDataUrl = c.toDataURL('image/png');
+      const faviconLink = document.getElementById('appFavicon');
+      if (faviconLink) faviconLink.href = transparentDataUrl;
+
+      const headerLogo = document.getElementById('headerLogo');
+      if (headerLogo) headerLogo.src = transparentDataUrl;
+    };
+    img.src = 'assets/favicon.png';
+  }
+  makeFaviconTransparent();
+
+  // ---------------- Seeded 2D Value Noise Generator ----------------
+  class ValueNoise2D {
+    constructor(seed = Math.random()){
+      this.p = new Uint8Array(512);
+      const perm = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) perm[i] = i;
+      let s = seed * 100000;
+      for (let i = 255; i > 0; i--) {
+        s = (s * 9301 + 49297) % 233280;
+        const j = Math.floor((s / 233280) * (i + 1));
+        const tmp = perm[i]; perm[i] = perm[j]; perm[j] = tmp;
+      }
+      for (let i = 0; i < 512; i++) this.p[i] = perm[i & 255];
+    }
+    fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+    lerp(t, a, b) { return a + t * (b - a); }
+    val(ix, iy) {
+      return (this.p[this.p[ix & 255] + (iy & 255)] & 255) / 255.0;
+    }
+    sample(x, y) {
+      const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+      const xf = x - Math.floor(x), yf = y - Math.floor(y);
+      const u = this.fade(xf), v = this.fade(yf);
+      const v00 = this.val(X, Y),     v10 = this.val(X + 1, Y);
+      const v01 = this.val(X, Y + 1), v11 = this.val(X + 1, Y + 1);
+      return this.lerp(v, this.lerp(u, v00, v10), this.lerp(u, v01, v11));
+    }
+  }
+
+  // Update Dynamic Max for Beaches Slider based on Islands Count (max = numIslands * 3)
+  function updateBeachSliderLimits(){
+    const numIslands = parseInt(islandsSlider.value, 10);
+    const maxBeaches = numIslands * 3;
+    beachCountSlider.max = maxBeaches;
+    if (parseInt(beachCountSlider.value, 10) > maxBeaches){
+      beachCountSlider.value = maxBeaches;
+    }
+    beachCountVal.textContent = `${beachCountSlider.value} (Max ${maxBeaches})`;
+  }
+
+  // ---------------- UI Event Listeners ----------------
+  waterSlider.addEventListener('input', () => { waterVal.textContent = waterSlider.value + '%'; doGenerate(); });
+  islandSizeSlider.addEventListener('input', () => { islandSizeVal.textContent = islandSizeSlider.value + '%'; doGenerate(); });
+  beachWidthSlider.addEventListener('input', () => { beachWidthVal.textContent = beachWidthSlider.value; doGenerate(); });
+  spacingSlider.addEventListener('input', () => { spacingVal.textContent = spacingSlider.value; doGenerate(); });
+  
+  islandsSlider.addEventListener('input', () => {
+    islandsVal.textContent = islandsSlider.value;
+    updateBeachSliderLimits();
+    doGenerate();
+  });
+  
+  smoothSlider.addEventListener('input', () => { smoothVal.textContent = smoothSlider.value; doGenerate(); });
+  
+  wideBeachToggle.addEventListener('change', () => {
+    beachSliderContainer.style.display = wideBeachToggle.checked ? 'block' : 'none';
+    updateBeachSliderLimits();
+    doGenerate();
+  });
+
+  beachCountSlider.addEventListener('input', () => {
+    updateBeachSliderLimits();
+    doGenerate();
+  });
+
+  sizeSelect.addEventListener('change', doGenerate);
+
+  gridToggle.addEventListener('change', () => {
+    renderViewport();
+  });
+
+  // ---------------- Independent Organic Multi-Island Generator ----------------
+  function generateIsland(cols, rows, waterPercent, islandScalePercent, numIslands, spacingValNum, smoothness, wideBeaches, totalBeachesRequested){
+    const targetLandFraction = 1 - (waterPercent / 100);
+    const islandScale = islandScalePercent / 100.0;
+
+    const oceanGapMin = Math.round(2.0 + (spacingValNum - 1) * 2.0);
+
+    const minDim = Math.min(cols, rows);
+    const baseMaxRadius = minDim * Math.max(0.24, 0.62 - (numIslands - 1) * 0.05) * islandScale * Math.sqrt(targetLandFraction / 0.55);
+    
+    const sizeProfiles = [];
+    for (let i = 0; i < numIslands; i++){
+      if (i === 0) sizeProfiles.push(rand(0.90, 1.30));        // Main Island
+      else if (i === 1) sizeProfiles.push(rand(0.55, 0.90));   // Secondary Island
+      else sizeProfiles.push(rand(0.35, 0.65));                // Satellite Islet
+    }
+    sizeProfiles.sort(() => Math.random() - 0.5);
+
+    const seeds = [];
+    for (let i = 0; i < numIslands; i++){
+      let placed = false;
+      const targetR = baseMaxRadius * sizeProfiles[i];
+
+      for (let attempt = 0; attempt < 120 && !placed; attempt++){
+        const r = targetR * rand(0.9, 1.1);
+        const x = rand(r * 0.2, cols - r * 0.2);
+        const y = rand(r * 0.2, rows - r * 0.2);
+
+        let ok = true;
+        for (const s of seeds){
+          const d = Math.hypot(x - s.x, y - s.y);
+          if (d < (r + s.r) + oceanGapMin * 0.85){
+            ok = false;
+            break;
+          }
+        }
+
+        if (ok){
+          seeds.push({
+            x, y, r,
+            wobbleSeed: Math.random() * 1000,
+            wobbleFreq1: Math.floor(rand(2, 5)),
+            wobbleFreq2: Math.floor(rand(4, 8)),
+            beachSectors: []
+          });
+          placed = true;
+          break;
+        }
+      }
+
+      if (!placed){
+        seeds.push({
+          x: rand(0, cols),
+          y: rand(0, rows),
+          r: targetR * 0.7,
+          wobbleSeed: Math.random() * 1000,
+          wobbleFreq1: Math.floor(rand(2, 5)),
+          wobbleFreq2: Math.floor(rand(4, 8)),
+          beachSectors: []
+        });
+      }
+    }
+
+    if (wideBeaches && seeds.length > 0){
+      const totalBeaches = Math.min(seeds.length * 3, totalBeachesRequested);
+      for (let b = 0; b < totalBeaches; b++){
+        const targetSeed = seeds[b % seeds.length];
+        const angle = rand(0, Math.PI * 2);
+        const arcWidth = rand(Math.PI * 0.35, Math.PI * 0.65);
+        targetSeed.beachSectors.push({ angle, arcWidth });
+      }
+    }
+
+    const t = smoothness / 10;
+    const passes = 1 + Math.round(t * 4);
+    const wobbleAmp1 = 0.30 - t * 0.14;
+    const wobbleAmp2 = 0.20 - t * 0.10;
+
+    const rawLand = new Uint8Array(cols * rows);
+    const landOwner = new Int32Array(cols * rows).fill(-1);
+
+    for (let y = 0; y < rows; y++){
+      for (let x = 0; x < cols; x++){
+        const idx = y * cols + x;
+        let isLand = false;
+        let ownerIndex = -1;
+        let maxVal = -1;
+
+        for (let k = 0; k < seeds.length; k++){
+          const s = seeds[k];
+          const dx = x - s.x, dy = y - s.y;
+          const dist = Math.hypot(dx, dy);
+          const ang = Math.atan2(dy, dx);
+          const wobble = 1 + wobbleAmp1 * Math.sin(ang * s.wobbleFreq1 + s.wobbleSeed)
+                           + wobbleAmp2 * Math.sin(ang * s.wobbleFreq2 - s.wobbleSeed * 1.5);
+          const effectiveRadius = s.r * wobble;
+          const val = 1.0 - (dist / effectiveRadius);
+
+          if (val > 0 && val > maxVal){
+            maxVal = val;
+            isLand = true;
+            ownerIndex = k;
+          }
+        }
+
+        if (isLand){
+          rawLand[idx] = 1;
+          landOwner[idx] = ownerIndex;
+        }
+      }
+    }
+
+    let land = new Uint8Array(cols * rows);
+    const gapRadius = Math.max(1, Math.floor(oceanGapMin / 2.0));
+
+    for (let y = 0; y < rows; y++){
+      for (let x = 0; x < cols; x++){
+        const idx = y * cols + x;
+        if (rawLand[idx]){
+          const owner = landOwner[idx];
+          let tooCloseToOther = false;
+
+          for (let dy = -gapRadius; dy <= gapRadius; dy++){
+            for (let dx = -gapRadius; dx <= gapRadius; dx++){
+              if (dx === 0 && dy === 0) continue;
+              const nx = x + dx, ny = y + dy;
+              if (nx >= 0 && ny >= 0 && nx < cols && ny < rows){
+                const nidx = ny * cols + nx;
+                if (rawLand[nidx] && landOwner[nidx] !== owner){
+                  tooCloseToOther = true;
+                  break;
+                }
+              }
+            }
+            if (tooCloseToOther) break;
+          }
+
+          if (!tooCloseToOther){
+            land[idx] = 1;
+          }
+        }
+      }
+    }
+
+    for (let p = 0; p < passes; p++){
+      const next = new Uint8Array(cols * rows);
+      for (let y = 0; y < rows; y++){
+        for (let x = 0; x < cols; x++){
+          let landNeighbors = 0;
+          for (let dy = -1; dy <= 1; dy++){
+            for (let dx = -1; dx <= 1; dx++){
+              if (dx === 0 && dy === 0) continue;
+              const nx = x + dx, ny = y + dy;
+              if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+              if (land[ny * cols + nx]) landNeighbors++;
+            }
+          }
+          next[y * cols + x] = landNeighbors >= 5 ? 1 : (landNeighbors <= 3 ? 0 : land[y * cols + x]);
+        }
+      }
+      land = next;
+    }
+
+    currentSeeds = seeds;
+    return land;
+  }
+
+  function coastDistance(land, cols, rows){
+    const dist = new Int32Array(cols * rows).fill(-1);
+    const queue = new Int32Array(cols * rows);
+    let head = 0, tail = 0;
+    for (let i = 0; i < land.length; i++){
+      if (!land[i]){ dist[i] = 0; queue[tail++] = i; }
+    }
+    while (head < tail){
+      const cur = queue[head++];
+      const cx = cur % cols, cy = Math.floor(cur / cols);
+      const neighbors = [
+        [cx - 1, cy], [cx + 1, cy], [cx, cy - 1], [cx, cy + 1],
+        [cx - 1, cy - 1], [cx + 1, cy - 1], [cx - 1, cy + 1], [cx + 1, cy + 1]
+      ];
+      for (const [nx, ny] of neighbors){
+        if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+        const ni = ny * cols + nx;
+        if (dist[ni] === -1){
+          dist[ni] = dist[cur] + 1;
+          queue[tail++] = ni;
+        }
+      }
+    }
+    return dist;
+  }
+
+  function buildGrid(land, cols, rows, wideBeaches, beachWidthValNum, seeds){
+    const dist = coastDistance(land, cols, rows);
+    const noise = new ValueNoise2D(Math.random());
+
+    const sandRatioScale = beachWidthValNum / 5.0;
+
+    const grid = [];
+    for (let y = 0; y < rows; y++){
+      const row = [];
+      for (let x = 0; x < cols; x++){
+        const i = y * cols + x;
+        if (!land[i]){
+          row.push({ type: WATER.type, color: WATER.color, terrain: WATER.terrain });
+        } else {
+          const n1 = noise.sample(x * 0.14, y * 0.14);
+          const n2 = noise.sample(x * 0.32, y * 0.32);
+          const noiseVal = n1 * 0.7 + n2 * 0.3;
+
+          let nearestSeed = seeds[0], minDist = Infinity;
+          for (const s of seeds){
+            const d = Math.hypot(x - s.x, y - s.y);
+            if (d < minDist){ minDist = d; nearestSeed = s; }
+          }
+
+          let inBeachSector = false;
+          if (wideBeaches && nearestSeed && nearestSeed.beachSectors && nearestSeed.beachSectors.length > 0){
+            const cellAng = Math.atan2(y - nearestSeed.y, x - nearestSeed.x);
+            for (const sec of nearestSeed.beachSectors){
+              const diff = Math.abs(Math.atan2(Math.sin(cellAng - sec.angle), Math.cos(cellAng - sec.angle)));
+              if (diff <= sec.arcWidth / 2){
+                inBeachSector = true;
+                break;
+              }
+            }
+          }
+
+          let maxBeachDepth;
+          if (wideBeaches && inBeachSector){
+            maxBeachDepth = Math.round((1.5 + noiseVal * 3.5) * sandRatioScale);
+          } else if (wideBeaches){
+            maxBeachDepth = Math.round((0.8 + noiseVal * 1.5) * sandRatioScale);
+          } else {
+            maxBeachDepth = Math.round((noiseVal * 2.4) * sandRatioScale);
+          }
+
+          if (dist[i] <= maxBeachDepth){
+            row.push({ type: COAST.type, color: COAST.color, terrain: COAST.terrain });
+          } else {
+            row.push({ type: LAND.type, color: LAND.color, terrain: LAND.terrain });
+          }
+        }
+      }
+      grid.push(row);
+    }
+    return grid;
+  }
+
+  function renderOffscreenTerrain(grid, cols, rows){
+    offscreenCanvas.width = cols * CELL_RENDER_PX;
+    offscreenCanvas.height = rows * CELL_RENDER_PX;
+
+    for (let y = 0; y < rows; y++){
+      for (let x = 0; x < cols; x++){
+        offscreenCtx.fillStyle = grid[y][x].color;
+        offscreenCtx.fillRect(x * CELL_RENDER_PX, y * CELL_RENDER_PX, CELL_RENDER_PX, CELL_RENDER_PX);
+      }
+    }
+  }
+
+  function renderViewport(){
+    if (!currentGrid) return;
+
+    const rect = canvasWrapper.getBoundingClientRect();
+    if (visibleCanvas.width !== rect.width || visibleCanvas.height !== rect.height){
+      visibleCanvas.width = rect.width;
+      visibleCanvas.height = rect.height;
+    }
+
+    ctx.save();
+    ctx.clearRect(0, 0, visibleCanvas.width, visibleCanvas.height);
+    ctx.fillStyle = WATER.color;
+    ctx.fillRect(0, 0, visibleCanvas.width, visibleCanvas.height);
+
+    ctx.translate(panX, panY);
+    ctx.scale(scale, scale);
+
+    ctx.drawImage(offscreenCanvas, 0, 0);
+
+    if (gridToggle.checked){
+      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+      ctx.lineWidth = 1 / scale;
+      ctx.beginPath();
+      const mapW = currentCols * CELL_RENDER_PX;
+      const mapH = currentRows * CELL_RENDER_PX;
+
+      for (let x = 0; x <= currentCols; x++){
+        const px = x * CELL_RENDER_PX;
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, mapH);
+      }
+      for (let y = 0; y <= currentRows; y++){
+        const py = y * CELL_RENDER_PX;
+        ctx.moveTo(0, py);
+        ctx.lineTo(mapW, py);
+      }
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    zoomLevelText.textContent = `${Math.round(scale * 100)}%`;
+  }
+
+  function resetView(cols, rows){
+    const rect = canvasWrapper.getBoundingClientRect();
+    const mapW = cols * CELL_RENDER_PX;
+    const mapH = rows * CELL_RENDER_PX;
+    
+    const scaleX = (rect.width * 0.92) / mapW;
+    const scaleY = (rect.height * 0.92) / mapH;
+    scale = Math.min(scaleX, scaleY, 1.8);
+    
+    panX = (rect.width - mapW * scale) / 2;
+    panY = (rect.height - mapH * scale) / 2;
+  }
+
+  function doGenerate(){
+    const sizeIdx = parseInt(sizeSelect.value, 10);
+    const { cols, rows, label } = SIZES[sizeIdx];
+    const waterPercent = parseInt(waterSlider.value, 10);
+    const islandScalePercent = parseInt(islandSizeSlider.value, 10);
+    const beachWidthValNum = parseInt(beachWidthSlider.value, 10);
+    const numIslands = parseInt(islandsSlider.value, 10);
+    const spacingValNum = parseInt(spacingSlider.value, 10);
+    const smoothness = parseInt(smoothSlider.value, 10);
+    const wideBeaches = wideBeachToggle.checked;
+    const totalBeaches = parseInt(beachCountSlider.value, 10);
+
+    const land = generateIsland(cols, rows, waterPercent, islandScalePercent, numIslands, spacingValNum, smoothness, wideBeaches, totalBeaches);
+    const grid = buildGrid(land, cols, rows, wideBeaches, beachWidthValNum, currentSeeds);
+
+    currentGrid = grid;
+    currentCols = cols;
+    currentRows = rows;
+
+    renderOffscreenTerrain(grid, cols, rows);
+    resetView(cols, rows);
+    renderViewport();
+
+    exportBtn.disabled = false;
+
+    const shapeDesc = numIslands === 1
+      ? "1 single island"
+      : `${numIslands} organic rounded islands`;
+    const beachDesc = wideBeaches ? ` · ${totalBeaches} total beaches` : '';
+    metaLine.textContent = `${label} · ${waterPercent}% water · Size ${islandScalePercent}% · Sand Ratio ${beachWidthValNum} · ${shapeDesc}${beachDesc}.`;
+  }
+
+  function doExport(){
+    if (!currentGrid) return;
+    const payload = { cols: currentCols, rows: currentRows, cs: CELL_SIZE_EXPORT, grid: currentGrid };
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `island-${currentCols}x${currentRows}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------- Mouse & Touch Viewport Interactions ----------------
+  canvasWrapper.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.viewport-controls')) return;
+    isDragging = true;
+    dragStartX = e.clientX - panX;
+    dragStartY = e.clientY - panY;
+  });
+
+  canvasWrapper.addEventListener('mousemove', (e) => {
+    const rect = canvasWrapper.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (isDragging){
+      panX = e.clientX - dragStartX;
+      panY = e.clientY - dragStartY;
+      renderViewport();
+    }
+
+    const offX = (mouseX - panX) / scale;
+    const offY = (mouseY - panY) / scale;
+    const gridX = Math.floor(offX / CELL_RENDER_PX);
+    const gridY = Math.floor(offY / CELL_RENDER_PX);
+
+    if (gridX >= 0 && gridX < currentCols && gridY >= 0 && gridY < currentRows){
+      coordsBadge.textContent = `📍 X: ${gridX}, Y: ${gridY}`;
+    } else {
+      coordsBadge.textContent = `📍 Out of bounds`;
+    }
+  });
+
+  canvasWrapper.addEventListener('mouseleave', () => {
+    coordsBadge.textContent = `📍 X: --, Y: --`;
+  });
+
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  canvasWrapper.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = canvasWrapper.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const zoomFactor = e.deltaY < 0 ? 1.12 : 0.88;
+    const newScale = Math.min(Math.max(0.2, scale * zoomFactor), 6.0);
+
+    panX = mouseX - (mouseX - panX) * (newScale / scale);
+    panY = mouseY - (mouseY - panY) * (newScale / scale);
+    scale = newScale;
+
+    renderViewport();
+  }, { passive: false });
+
+  // Touch gesture support
+  let touchStartDist = 0;
+  let initialTouchScale = 1.0;
+
+  canvasWrapper.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.viewport-controls')) return;
+    if (e.touches.length === 1){
+      isDragging = true;
+      dragStartX = e.touches[0].clientX - panX;
+      dragStartY = e.touches[0].clientY - panY;
+    } else if (e.touches.length === 2){
+      isDragging = false;
+      touchStartDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      initialTouchScale = scale;
+    }
+  }, { passive: true });
+
+  canvasWrapper.addEventListener('touchmove', (e) => {
+    if (isDragging && e.touches.length === 1){
+      panX = e.touches[0].clientX - dragStartX;
+      panY = e.touches[0].clientY - dragStartY;
+      renderViewport();
+    } else if (e.touches.length === 2 && touchStartDist > 0){
+      const currentDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const newScale = Math.min(Math.max(0.2, initialTouchScale * (currentDist / touchStartDist)), 6.0);
+      scale = newScale;
+      renderViewport();
+    }
+  }, { passive: true });
+
+  canvasWrapper.addEventListener('touchend', () => { isDragging = false; touchStartDist = 0; });
+
+  zoomInBtn.addEventListener('click', () => {
+    const rect = canvasWrapper.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    const newScale = Math.min(6.0, scale * 1.25);
+    panX = cx - (cx - panX) * (newScale / scale);
+    panY = cy - (cy - panY) * (newScale / scale);
+    scale = newScale;
+    renderViewport();
+  });
+
+  zoomOutBtn.addEventListener('click', () => {
+    const rect = canvasWrapper.getBoundingClientRect();
+    const cx = rect.width / 2, cy = rect.height / 2;
+    const newScale = Math.max(0.2, scale * 0.8);
+    panX = cx - (cx - panX) * (newScale / scale);
+    panY = cy - (cy - panY) * (newScale / scale);
+    scale = newScale;
+    renderViewport();
+  });
+
+  zoomResetBtn.addEventListener('click', () => {
+    resetView(currentCols, currentRows);
+    renderViewport();
+  });
+
+  generateBtn.addEventListener('click', doGenerate);
+  exportBtn.addEventListener('click', doExport);
+  window.addEventListener('resize', renderViewport);
+
+  // Initial setup & generation
+  updateBeachSliderLimits();
+  doGenerate();
+})();
+</script>
+
+</body>
+</html>
