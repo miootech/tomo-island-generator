@@ -70,6 +70,21 @@
     align-items:flex-end; margin-bottom: 12px;
   }
 
+  .group{
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    padding: 14px 16px 16px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,0.4);
+  }
+  .group-title{
+    font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--gold-deep); margin-bottom: 12px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .group-row{ display:flex; flex-wrap:wrap; gap: 16px; align-items:flex-end; }
+  .group-actions{ border:none; background:transparent; padding:0; margin-bottom: 12px; }
+
   .field{ display:flex; flex-direction:column; gap:6px; min-width: 170px; flex: 1; }
   .field label{
     font-size: 11.5px; font-weight:800; color: var(--ink-soft);
@@ -280,6 +295,42 @@
     button{ flex:1; }
     .canvas-wrapper{ height: 380px; }
   }
+
+  /* ---------------- Toasts ---------------- */
+  .toast-container{
+    position: fixed; top: 20px; right: 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    z-index: 1000; max-width: 340px;
+  }
+  .toast{
+    background: var(--ink); color: #fff8ea;
+    border-radius: 12px; padding: 12px 16px;
+    font-size: 13.5px; font-weight: 700; line-height: 1.4;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.22);
+    opacity: 0; transform: translateX(24px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .toast.toast-visible{ opacity: 1; transform: translateX(0); }
+  .toast.toast-success{ background: #2f5d3a; }
+  .toast.toast-error{ background: #7a2222; }
+
+  /* ---------------- Redirect modal ---------------- */
+  .modal-overlay{
+    position: fixed; inset: 0; background: rgba(58,46,31,0.45);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1001; padding: 20px;
+  }
+  .modal-box{
+    background: var(--cream-card); border: 3px solid var(--gold);
+    border-radius: var(--radius); box-shadow: var(--panel-shadow);
+    padding: 26px 28px; max-width: 420px; width: 100%;
+    text-align: center;
+  }
+  .modal-title{ font-size: 19px; font-weight: 900; margin-bottom: 8px; }
+  .modal-message{ font-size: 14px; color: var(--ink-soft); font-weight: 600; line-height: 1.5; margin-bottom: 20px; }
+  .modal-buttons{ display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .modal-buttons button{ background: var(--ink); color: #fff8ea; box-shadow: 0 4px 0 #201a10; }
+  .modal-buttons button.modal-primary{ background: var(--gold); color: var(--ink); box-shadow: 0 4px 0 var(--gold-deep); }
 </style>
 </head>
 <body>
@@ -292,72 +343,107 @@
 
 <div class="panel">
   <div class="controls">
-    <div class="field">
-      <label>Island Size / Mii Count</label>
-      <select id="sizeSelect">
-        <option value="0">Starting Island (48×34)</option>
-        <option value="1" selected>Small Island — approx. 8 Miis (68×48)</option>
-        <option value="2">Medium Island — approx. 20 Miis (88×68)</option>
-        <option value="3">Large Island — approx. 35+ Miis (118×78)</option>
-      </select>
-    </div>
 
-    <div class="field">
-      <label>Water Percentage <span class="val" id="waterVal">45%</span></label>
-      <input type="range" id="waterSlider" min="1" max="90" step="1" value="45">
-    </div>
+    <div class="group">
+      <div class="group-title">🏝️ Island Shape</div>
+      <div class="group-row">
+        <div class="field">
+          <label>Island Size / Mii Count</label>
+          <select id="sizeSelect">
+            <option value="0">Starting Island (48×34)</option>
+            <option value="1" selected>Small Island — approx. 8 Miis (68×48)</option>
+            <option value="2">Medium Island — approx. 20 Miis (88×68)</option>
+            <option value="3">Large Island — approx. 35+ Miis (118×78)</option>
+          </select>
+        </div>
 
-    <div class="field">
-      <label>Island Size / Scale <span class="val" id="islandSizeVal">100%</span></label>
-      <input type="range" id="islandSizeSlider" min="50" max="150" step="5" value="100">
-    </div>
+        <div class="field">
+          <label>Number of Islands <span class="val" id="islandsVal">1</span></label>
+          <input type="range" id="islandsSlider" min="1" max="7" step="1" value="1">
+        </div>
 
-    <div class="field">
-      <label>Sand / Beach Ratio <span class="val" id="beachWidthVal">5</span></label>
-      <input type="range" id="beachWidthSlider" min="1" max="10" step="1" value="5">
-    </div>
+        <div class="field">
+          <label>Island Distance / Spacing <span class="val" id="spacingVal">5</span></label>
+          <input type="range" id="spacingSlider" min="1" max="10" step="1" value="5">
+        </div>
 
-    <div class="field">
-      <label>Number of Islands <span class="val" id="islandsVal">1</span></label>
-      <input type="range" id="islandsSlider" min="1" max="7" step="1" value="1">
-    </div>
-
-    <div class="field">
-      <label>Island Distance / Spacing <span class="val" id="spacingVal">5</span></label>
-      <input type="range" id="spacingSlider" min="1" max="10" step="1" value="5">
-    </div>
-
-    <div class="field">
-      <label>Coastline Smoothness <span class="val" id="smoothVal">6</span></label>
-      <input type="range" id="smoothSlider" min="0" max="10" step="1" value="6">
-    </div>
-
-    <div class="toggle-field">
-      <label>Beaches</label>
-      <label class="toggle-row">
-        <input type="checkbox" id="wideBeachToggle">
-        <span>Bigger Beaches / Organic Shores</span>
-      </label>
-      <div class="sub-slider-container" id="beachSliderContainer">
-        <label>Total Beaches <span class="val" id="beachCountVal">2 (Max 3)</span></label>
-        <input type="range" id="beachCountSlider" min="1" max="3" step="1" value="2">
+        <div class="field">
+          <label>Coastline Smoothness <span class="val" id="smoothVal">6</span></label>
+          <input type="range" id="smoothSlider" min="0" max="10" step="1" value="6">
+        </div>
       </div>
     </div>
 
-    <div class="toggle-field">
-      <label>Display</label>
-      <label class="toggle-row">
-        <input type="checkbox" id="gridToggle" checked>
-        <span>Show pixel grid overlay</span>
-      </label>
+    <div class="group">
+      <div class="group-title">🌊 Water &amp; Terrain</div>
+      <div class="group-row">
+        <div class="field">
+          <label>Water Percentage <span class="val" id="waterVal">45%</span></label>
+          <input type="range" id="waterSlider" min="1" max="90" step="1" value="45">
+        </div>
+
+        <div class="field">
+          <label>Island Size / Scale <span class="val" id="islandSizeVal">100%</span></label>
+          <input type="range" id="islandSizeSlider" min="50" max="150" step="5" value="100">
+        </div>
+
+        <div class="field">
+          <label>Sand / Beach Ratio <span class="val" id="beachWidthVal">5</span></label>
+          <input type="range" id="beachWidthSlider" min="1" max="10" step="1" value="5">
+        </div>
+
+        <div class="toggle-field">
+          <label>Beaches</label>
+          <label class="toggle-row">
+            <input type="checkbox" id="wideBeachToggle">
+            <span>Bigger Beaches / Organic Shores</span>
+          </label>
+          <div class="sub-slider-container" id="beachSliderContainer">
+            <label>Total Beaches <span class="val" id="beachCountVal">2 (Max 3)</span></label>
+            <input type="range" id="beachCountSlider" min="1" max="3" step="1" value="2">
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="buttons">
-      <button id="generateBtn">🎲 Reroll Variation</button>
-      <button id="exportBtn" disabled>⬇ Export for TomoDraft (.json)</button>
+    <div class="group">
+      <div class="group-title">🖥️ Display</div>
+      <div class="group-row">
+        <div class="toggle-field">
+          <label>Canvas</label>
+          <label class="toggle-row">
+            <input type="checkbox" id="gridToggle" checked>
+            <span>Show pixel grid overlay</span>
+          </label>
+        </div>
+
+        <div class="toggle-field" id="savOptions" style="display:none">
+          <label>Imported Save</label>
+          <label class="toggle-row">
+            <input type="checkbox" id="showBuildingsToggle">
+            <span>🏠 Show buildings on canvas</span>
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="removeDecorToggle">
+            <span>🧹 Remove decor / paths / UGC</span>
+          </label>
+        </div>
+      </div>
     </div>
+
+    <div class="group group-actions">
+      <div class="buttons">
+        <button id="generateBtn">🎲 Reroll Variation</button>
+        <button id="exportBtn" disabled>⬇ Export for TomoDraft (.json)</button>
+        <input type="file" id="mapSavInput" accept=".sav" style="display:none">
+        <button id="loadSavBtn" type="button">📂 Load your map.sav</button>
+        <button id="exportSavBtn" type="button" disabled>💾 Export as map.sav</button>
+      </div>
+    </div>
+
   </div>
   <div class="meta" id="metaLine">Adjust any setting — the map updates instantly.</div>
+  <div class="meta" id="savStatus">Load your own map.sav to enable exporting the generated island directly back into the game.</div>
 </div>
 
 <div class="stage-container">
@@ -377,6 +463,8 @@
     <span><span class="swatch" style="background:#4a90c4"></span> Ocean</span>
     <span><span class="swatch" style="background:#f2d16b"></span> Sandy Beach</span>
     <span><span class="swatch" style="background:#7CFC00"></span> Grass</span>
+    <span id="legendHouse" style="display:none"><span class="swatch" style="background:#e11d48"></span> House</span>
+    <span id="legendFacility" style="display:none"><span class="swatch" style="background:#2563eb"></span> Shop / Facility</span>
   </div>
 </div>
 
@@ -388,7 +476,372 @@
   </div>
 </footer>
 
-<script>
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-message" id="modalMessage"></div>
+    <div class="modal-buttons">
+      <button id="modalStayBtn" type="button"></button>
+      <button id="modalContinueBtn" type="button" class="modal-primary"></button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  // ---------------- map.sav import/export (via @alexislours/ltd-savedata) ----------------
+  // Source: https://github.com/alexislours/ltd-save-editor (AGPL-3.0-or-later)
+  import {
+    parseSav, writeSav, decode, encode, createMaterializedAccessor
+  } from 'https://esm.sh/@alexislours/ltd-savedata@1.0.2';
+  import { MAP_SCHEMA } from 'https://esm.sh/@alexislours/ltd-savedata@1.0.2/schema';
+
+  // Fixed island grid size used by the game's Map.sav (confirmed against the
+  // editor's own source: src/lib/map/state/mapEditor.svelte.ts)
+  const SAV_MAP_WIDTH  = 120; // x
+  const SAV_MAP_HEIGHT = 80;  // y
+  const SAV_TILE_COUNT = SAV_MAP_WIDTH * SAV_MAP_HEIGHT;
+  const savIndexFromXY = (x, y) => x * SAV_MAP_HEIGHT + y;
+
+  const FLOOR_LEAF = MAP_SCHEMA.MapGrid.GridX.GridZ.FloorKeyHash;
+  const UGC_LEAF   = MAP_SCHEMA.MapGrid.GridX.GridZ.UgcIndex;
+  const UGC_NONE   = -1;
+
+  // MapObject parallel arrays (one entry per placed object). Source:
+  // src/lib/map/state/mapObjectsEditor.svelte.ts in the editor repo.
+  const OBJ_LEAVES = {
+    actor:   MAP_SCHEMA.MapObject.ActorKey,
+    x:       MAP_SCHEMA.MapObject.Location.GridPosX,
+    y:       MAP_SCHEMA.MapObject.Location.GridPosY,
+    link:    MAP_SCHEMA.MapObject.MapLink.LinkedMapId,
+    rot:     MAP_SCHEMA.MapObject.MapObjectMisc.RotY,
+    addTime: MAP_SCHEMA.MapObject.MapObjectMisc.AddGameTime,
+    ugcExt:  MAP_SCHEMA.MapObject.UgcObje.UgcExteriorId,
+    ugcId:   MAP_SCHEMA.MapObject.UgcObje.UgcId,
+  };
+  const OBJ_HASHES = Object.fromEntries(
+    Object.entries(OBJ_LEAVES).map(([k, leaf]) => [k, leaf.hash >>> 0])
+  );
+
+  // Actual "building" actor keys (Mii houses + facilities like shops/landmarks),
+  // extracted from the editor's own catalogue (src/lib/map/actors/generatedActorNames.ts,
+  // category MapObject_House_* / MapObject_Facility_*). Everything else placed
+  // on the island (trees, benches, fences, step-stones, UGC decor, …) is
+  // treated as "decor & paths" for the removal checkbox.
+  const BUILDING_ACTOR_HASHES = new Set([
+    0x1f1eb32d, 0x22f85aa9, 0x4499cc8c, 0x4e992963, 0x4f2a4a2c,
+    0x639739e4, 0x6400ef93, 0x738bd7a2, 0x779b5f66, 0x7cb5537a,
+    0x7ff35b85, 0xb3f08ea7, 0xb5d0afa9, 0xcb84668f, 0xe3ec5c38,
+    0xef367ada, 0xf003e9c0,
+  ]);
+  function isBuildingActor(hash){ return BUILDING_ACTOR_HASHES.has(hash >>> 0); }
+
+  // Which of the 17 building actors is a Mii house vs. a shop/facility —
+  // drives the legend colour (red / blue). Source: same catalogue, the
+  // 'MapObject_House_*' vs 'MapObject_Facility_*' category prefix.
+  const HOUSE_ACTOR_HASHES = new Set([0xe3ec5c38, 0xef367ada]);
+  function buildingColor(hash){
+    return HOUSE_ACTOR_HASHES.has(hash >>> 0) ? '#e11d48' /* house: red */ : '#2563eb' /* facility: blue */;
+  }
+
+  // Real footprint rectangles (relative to the object's GridPosX/GridPosY),
+  // extracted from the editor's generatedActorNames.ts (ACTOR_FOOTPRINT).
+  // { x0, y0, w, h } — x0/y0 are offsets from the placement point, before rotation.
+  const BUILDING_FOOTPRINT = new Map([
+    [0x1f1eb32d, { x0: -2, y0: -2, w: 6, h: 5 }],  // FacilityFamilyRestaurant
+    [0x22f85aa9, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityItemShop
+    [0x4499cc8c, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityPhotoStudio
+    [0x4e992963, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityTower
+    [0x4f2a4a2c, { x0: -1, y0: -1, w: 3, h: 3 }],  // FacilityMarket
+    [0x639739e4, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilitySupermarket
+    [0x6400ef93, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityInteriorShop
+    [0x738bd7a2, { x0: -4, y0: -2, w: 9, h: 5 }],  // FacilityFerrisWheel
+    [0x779b5f66, { x0: -2, y0: -4, w: 6, h: 10 }], // FacilityFountainPark
+    [0x7cb5537a, { x0:  0, y0:  0, w: 4, h: 3 }],  // FacilityFountain
+    [0x7ff35b85, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityClothShop
+    [0xb3f08ea7, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityAtelier
+    [0xb5d0afa9, { x0:  0, y0:  0, w: 6, h: 10 }], // FacilityPark
+    [0xcb84668f, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityBuildingShop
+    [0xe3ec5c38, { x0: -2, y0: -1, w: 6, h: 4 }],  // HouseDollHouse
+    [0xef367ada, { x0: -1, y0: -1, w: 3, h: 4 }],  // HouseOneRoom
+    [0xf003e9c0, { x0: -1, y0: -1, w: 4, h: 4 }],  // FacilityPawnShop
+  ]);
+  const DEFAULT_FOOTPRINT = { x0: -1, y0: -1, w: 2, h: 2 };
+
+  // Same quarter-turn rotation math as the editor's rotateActorFootprintInto,
+  // so a rotated building's true-size box matches what's actually in-game.
+  function quarterTurnsFromDeg(deg){
+    if (!Number.isFinite(deg)) return 0;
+    return ((Math.round(deg / 90) % 4) + 4) % 4;
+  }
+  function rotateOffset(dx, dy, t){
+    for (let i = 0; i < t; i++){ const nx = dy, ny = -dx; dx = nx; dy = ny; }
+    return [dx, dy];
+  }
+  function rotatedFootprint(hash, rotDeg){
+    const fp = BUILDING_FOOTPRINT.get(hash >>> 0) || DEFAULT_FOOTPRINT;
+    const t = quarterTurnsFromDeg(rotDeg);
+    if (t === 0) return { x0: fp.x0, y0: fp.y0, w: fp.w, h: fp.h };
+    const x1 = fp.x0 + fp.w - 1, y1 = fp.y0 + fp.h - 1;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (let i = 0; i < 4; i++){
+      const cx = i & 1 ? x1 : fp.x0, cy = i & 2 ? y1 : fp.y0;
+      const [rx, ry] = rotateOffset(cx, cy, t);
+      if (rx < minX) minX = rx; if (ry < minY) minY = ry;
+      if (rx > maxX) maxX = rx; if (ry > maxY) maxY = ry;
+    }
+    return { x0: minX, y0: minY, w: maxX - minX + 1, h: maxY - minY + 1 };
+  }
+
+  // Fixed floor-tile key hashes (from the editor's src/lib/map/tiles/tiles.ts).
+  // These identify which game floor asset a tile uses; they are NOT computed,
+  // they're constants baked into the game's data.
+  const TILE_HASH = {
+    water: 0xd21b65b6, // "Water"
+    beach: 0xb6d76a62, // "Beach"
+    grass: 0xff4ae68a, // "Grass"
+  };
+
+  // Full known tile catalogue (same source), used to classify an imported
+  // save's tiles back into this app's 3-colour model (ocean/beach/grass) so
+  // the canvas can preview a real map.sav. Anything that isn't clearly a
+  // "sand" family tile is shown as grass/land; only Water is ocean.
+  const TILE_CATEGORY = new Map([
+    [0xd21b65b6, 'ocean'],  // Water
+    [0xb6d76a62, 'beach'], [0x122a7d23, 'beach'], [0x2b9b8582, 'beach'], // Beach, Sand, Sand_Road
+    [0xa4afd856, 'beach'], [0xca11e25a, 'beach'],                       // Pebble, Pebble_Road
+    [0x9999d173, 'beach'], [0x62f90493, 'beach'],                       // Soil, Soil_Road
+    [0xff4ae68a, 'grass'], [0x2ef21057, 'grass'],                       // Grass, Grass_Road
+    [0xa27341ed, 'grass'], [0xafa5b5ab, 'grass'],                       // Clover, Clover_Road
+    [0x54ae7e98, 'grass'], [0xd1b37f49, 'grass'],                       // CherryBlossom(_Road)
+    [0x8a58eb7d, 'grass'], [0x923cfbd7, 'grass'],                       // FallenLeaves(_Road)
+    [0xb53f5f3d, 'grass'],                                              // Seaside
+  ]);
+  function classifyTileHash(hash){
+    return TILE_CATEGORY.get(hash >>> 0) ?? 'grass'; // built floors (stone/wood/road/etc.) shown as land
+  }
+
+  // ---------------- Toasts & redirect modal ----------------
+  function showToast(message, type){
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type === 'error' ? 'toast-error' : 'toast-success');
+    el.textContent = message;
+    container.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('toast-visible'));
+    setTimeout(() => {
+      el.classList.remove('toast-visible');
+      setTimeout(() => el.remove(), 300);
+    }, 3800);
+  }
+
+  function showRedirectModal({ title, message, stayLabel, continueLabel, url, onContinue }){
+    const overlay = document.getElementById('modalOverlay');
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    const stayBtn = document.getElementById('modalStayBtn');
+    const continueBtn = document.getElementById('modalContinueBtn');
+    stayBtn.textContent = stayLabel;
+    continueBtn.textContent = continueLabel;
+    overlay.style.display = 'flex';
+
+    function close(){
+      overlay.style.display = 'none';
+      stayBtn.removeEventListener('click', onStay);
+      continueBtn.removeEventListener('click', onContinue_);
+      overlay.removeEventListener('click', onOverlayClick);
+    }
+    function onStay(){ close(); }
+    function onContinue_(){
+      if (onContinue) onContinue();
+      else if (url) window.open(url, '_blank', 'noopener');
+      close();
+    }
+    function onOverlayClick(e){ if (e.target === overlay) close(); }
+
+    stayBtn.addEventListener('click', onStay);
+    continueBtn.addEventListener('click', onContinue_);
+    overlay.addEventListener('click', onOverlayClick);
+  }
+
+  // Remind first-time visitors that exporting a new map.sav requires their
+  // own existing save as a base (buildings/Miis/etc. come from it).
+  showRedirectModal({
+    title: 'Heads up, before you start',
+    message: "To export a new map.sav with your generated island, you first need to load your own existing Map.sav from the game. Your buildings, Miis and everything else stay exactly as they are — only the terrain (and optionally decor/paths) gets replaced.",
+    stayLabel: 'Got it',
+    continueLabel: '📂 Load map.sav now',
+    onContinue: () => document.getElementById('mapSavInput').click(),
+  });
+
+  let loadedDecoded = null;   // DecodedSave from decode(MAP_SCHEMA, parseSav(bytes))
+  let loadedFileName = '';
+  let originalMapObjects = null; // pristine snapshot of the 8 parallel MapObject.* arrays
+
+  function savStatus(msg, isError){
+    const el = document.getElementById('savStatus');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isError ? '#b3261e' : '';
+  }
+
+  function updateExportSavAvailability(){
+    const btn = document.getElementById('exportSavBtn');
+    if (!btn) return;
+    btn.disabled = !(loadedDecoded && window.__hasGeneratedGrid);
+  }
+  window.__updateExportSavAvailability = updateExportSavAvailability;
+
+  document.getElementById('loadSavBtn').addEventListener('click', () => {
+    document.getElementById('mapSavInput').click();
+  });
+
+  document.getElementById('mapSavInput').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const parsed = parseSav(buf);
+      const decoded = decode(MAP_SCHEMA, parsed);
+      const tiles = decoded.values[FLOOR_LEAF.hash >>> 0];
+      if (!Array.isArray(tiles) || tiles.length !== SAV_TILE_COUNT){
+        throw new Error(`Unexpected tile array (expected ${SAV_TILE_COUNT} entries, got ${tiles ? tiles.length : 'none'}). Is this really a Map.sav?`);
+      }
+
+      // Snapshot the placed-object arrays (buildings, decor, paths, UGC).
+      const rawObj = {};
+      for (const key of Object.keys(OBJ_LEAVES)){
+        const arr = decoded.values[OBJ_HASHES[key]];
+        if (!Array.isArray(arr)) throw new Error(`Save is missing MapObject data (${key}). Is this really a Map.sav?`);
+        rawObj[key] = arr.slice(); // copy, so later edits can't mutate our snapshot
+      }
+      const objCount = rawObj.actor.length;
+      for (const key of Object.keys(rawObj)){
+        if (rawObj[key].length !== objCount){
+          throw new Error(`MapObject.${key} count doesn't match ActorKey count — unexpected save structure.`);
+        }
+      }
+
+      loadedDecoded = decoded;
+      loadedFileName = file.name;
+      originalMapObjects = rawObj;
+      savStatus(`✅ Loaded "${file.name}" — ready to bake your generated island into it.`);
+      showToast(`✅ "${file.name}" loaded — showing its current ground map.`, 'success');
+      document.getElementById('savOptions').style.display = '';
+
+      // Rebuild a terrain preview (ocean/beach/grass) from the real tile
+      // hashes and hand it to the generator's own canvas renderer.
+      const terrainRows = [];
+      for (let y = 0; y < SAV_MAP_HEIGHT; y++){
+        const row = [];
+        for (let x = 0; x < SAV_MAP_WIDTH; x++){
+          row.push(classifyTileHash(tiles[savIndexFromXY(x, y)]));
+        }
+        terrainRows.push(row);
+      }
+
+      // Split placed objects into buildings vs. decor/paths/UGC for the
+      // canvas preview and the "remove decor" checkbox.
+      const objects = [];
+      for (let i = 0; i < objCount; i++){
+        objects.push({
+          x: rawObj.x[i], y: rawObj.y[i],
+          actor: rawObj.actor[i] >>> 0,
+          rot: rawObj.rot[i],
+          isBuilding: isBuildingActor(rawObj.actor[i]),
+        });
+      }
+
+      if (window.__renderImportedGrid){
+        window.__renderImportedGrid(terrainRows, SAV_MAP_WIDTH, SAV_MAP_HEIGHT, file.name, objects);
+      }
+    } catch (err){
+      loadedDecoded = null;
+      originalMapObjects = null;
+      document.getElementById('savOptions').style.display = 'none';
+      savStatus(`⚠ Could not read this file as Map.sav: ${err.message}`, true);
+      showToast(`⚠ Import failed: ${err.message}`, 'error');
+    }
+    updateExportSavAvailability();
+  });
+
+  function tileHashForCell(cell){
+    if (cell.terrain === 'ocean') return TILE_HASH.water;
+    if (cell.terrain === 'beach') return TILE_HASH.beach;
+    return TILE_HASH.grass; // 'grass' and any fallback
+  }
+
+  function doExportSav(){
+    if (!loadedDecoded || !window.__currentGridRef) return;
+    const { grid, cols, rows } = window.__currentGridRef;
+
+    const offsetX = Math.floor((SAV_MAP_WIDTH  - cols) / 2);
+    const offsetY = Math.floor((SAV_MAP_HEIGHT - rows) / 2);
+    if (offsetX < 0 || offsetY < 0){
+      const msg = `Generated island (${cols}×${rows}) is larger than the game's fixed ${SAV_MAP_WIDTH}×${SAV_MAP_HEIGHT} grid — pick a smaller island size.`;
+      savStatus(`⚠ ${msg}`, true);
+      showToast(`⚠ ${msg}`, 'error');
+      return;
+    }
+
+    const acc = createMaterializedAccessor(MAP_SCHEMA, loadedDecoded);
+
+    // Whole grid defaults to open ocean, then we stamp the generated island
+    // into the centered region — same margin logic as the game's native maps.
+    for (let x = 0; x < SAV_MAP_WIDTH; x++){
+      for (let y = 0; y < SAV_MAP_HEIGHT; y++){
+        const idx = savIndexFromXY(x, y);
+        const gx = x - offsetX, gy = y - offsetY;
+        const inGenerated = gx >= 0 && gx < cols && gy >= 0 && gy < rows;
+        const hash = inGenerated ? tileHashForCell(grid[gy][gx]) : TILE_HASH.water;
+        acc.setElement(FLOOR_LEAF, idx, hash);
+        acc.setElement(UGC_LEAF, idx, UGC_NONE);
+      }
+    }
+
+    // Buildings, Miis, etc. are always preserved untouched. Decor/paths/UGC
+    // objects are either kept exactly as in the original save, or dropped
+    // entirely, based on the checkbox — always computed fresh from the
+    // pristine snapshot so toggling it back and forth is non-destructive.
+    if (originalMapObjects){
+      const removeDecor = document.getElementById('removeDecorToggle').checked;
+      const keepIdx = [];
+      for (let i = 0; i < originalMapObjects.actor.length; i++){
+        if (!removeDecor || isBuildingActor(originalMapObjects.actor[i])) keepIdx.push(i);
+      }
+      for (const key of Object.keys(OBJ_LEAVES)){
+        const filtered = keepIdx.map(i => originalMapObjects[key][i]);
+        loadedDecoded.values[OBJ_HASHES[key]] = filtered;
+      }
+    }
+
+    const file = encode(MAP_SCHEMA, loadedDecoded);
+    const bytes = writeSav(file);
+    const blob = new Blob([bytes], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = loadedFileName || 'map.sav';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    savStatus(`✅ Exported "${a.download}" with your generated island baked in.`);
+    showToast(`✅ "${a.download}" exported.`, 'success');
+    showRedirectModal({
+      title: 'map.sav exported!',
+      message: 'Your island has been baked into the save file and downloaded. Continue to the LTD Save Editor to check buildings, Miis, and more?',
+      stayLabel: 'Stay here',
+      continueLabel: 'Go to LTD Save Editor →',
+      url: 'https://ltdsave.app'
+    });
+  }
+
+  document.getElementById('exportSavBtn').addEventListener('click', doExportSav);
+
 (function(){
   const SIZES = [
     { cols: 48,  rows: 34, label: "Starting Island (48×34)" },
@@ -442,6 +895,7 @@
   let currentGrid = null;
   let currentCols = 0, currentRows = 0;
   let currentSeeds = [];
+  let importedObjects = []; // [{x, y, isBuilding}] from the last loaded map.sav, for preview markers only
   
   // Viewport Transform State (Pan & Zoom)
   let scale = 1.0;
@@ -551,6 +1005,15 @@
   sizeSelect.addEventListener('change', doGenerate);
 
   gridToggle.addEventListener('change', () => {
+    renderViewport();
+  });
+
+  document.getElementById('showBuildingsToggle').addEventListener('change', (e) => {
+    document.getElementById('legendHouse').style.display = e.target.checked ? '' : 'none';
+    document.getElementById('legendFacility').style.display = e.target.checked ? '' : 'none';
+    renderViewport();
+  });
+  document.getElementById('removeDecorToggle').addEventListener('change', () => {
     renderViewport();
   });
 
@@ -855,6 +1318,37 @@
       ctx.stroke();
     }
 
+    // Object markers for an imported save (buildings / decor-paths preview).
+    // Purely visual — never affects currentGrid or the exported file.
+    if (importedObjects.length){
+      const showBuildings = document.getElementById('showBuildingsToggle').checked;
+      const removeDecor = document.getElementById('removeDecorToggle').checked;
+      const r = CELL_RENDER_PX * 1.1;
+
+      for (const obj of importedObjects){
+        if (obj.isBuilding){
+          if (!showBuildings) continue;
+          const fp = rotatedFootprint(obj.actor, obj.rot);
+          const px = (obj.x + fp.x0) * CELL_RENDER_PX;
+          const py = (obj.y + fp.y0) * CELL_RENDER_PX;
+          const pw = fp.w * CELL_RENDER_PX;
+          const ph = fp.h * CELL_RENDER_PX;
+          const color = buildingColor(obj.actor);
+          ctx.fillStyle = color + '55'; // translucent fill
+          ctx.strokeStyle = color;
+          ctx.lineWidth = Math.max(1, CELL_RENDER_PX * 0.3) / scale;
+          ctx.fillRect(px, py, pw, ph);
+          ctx.strokeRect(px, py, pw, ph);
+        } else {
+          if (removeDecor) continue; // will be stripped on export — hide from preview too
+          ctx.beginPath();
+          ctx.fillStyle = 'rgba(90,90,90,0.55)';
+          ctx.arc((obj.x + 0.5) * CELL_RENDER_PX, (obj.y + 0.5) * CELL_RENDER_PX, r * 0.55, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
     ctx.restore();
 
     zoomLevelText.textContent = `${Math.round(scale * 100)}%`;
@@ -898,12 +1392,56 @@
 
     exportBtn.disabled = false;
 
+    // Make the generated grid available to the map.sav export logic above.
+    window.__currentGridRef = { grid, cols, rows };
+    window.__hasGeneratedGrid = true;
+    if (window.__updateExportSavAvailability) window.__updateExportSavAvailability();
+
     const shapeDesc = numIslands === 1
       ? "1 single island"
       : `${numIslands} organic rounded islands`;
     const beachDesc = wideBeaches ? ` · ${totalBeaches} total beaches` : '';
     metaLine.textContent = `${label} · ${waterPercent}% water · Size ${islandScalePercent}% · Sand Ratio ${beachWidthValNum} · ${shapeDesc}${beachDesc}.`;
   }
+
+  const TERRAIN_CELL = { ocean: WATER, beach: COAST, grass: LAND };
+
+  // Called from the map.sav import handler with a [rows][cols] array of
+  // 'ocean' | 'beach' | 'grass' strings, derived from the real save's tiles.
+  // Draws it on the same canvas as a generated island, so the user sees
+  // exactly what ground map is currently stored in their file.
+  window.__renderImportedGrid = function(terrainRows, cols, rows, fileName, objects){
+    const grid = [];
+    for (let y = 0; y < rows; y++){
+      const row = [];
+      for (let x = 0; x < cols; x++){
+        const t = TERRAIN_CELL[terrainRows[y][x]] || LAND;
+        row.push({ type: t.type, color: t.color, terrain: t.terrain });
+      }
+      grid.push(row);
+    }
+
+    currentGrid = grid;
+    currentCols = cols;
+    currentRows = rows;
+    importedObjects = objects || [];
+
+    renderOffscreenTerrain(grid, cols, rows);
+    resetView(cols, rows);
+    renderViewport();
+
+    exportBtn.disabled = false;
+
+    // The real save is always the fixed 120×80 grid, larger than every preset
+    // — reflect that by selecting the closest (largest) size option.
+    sizeSelect.value = String(SIZES.length - 1);
+
+    window.__currentGridRef = { grid, cols, rows };
+    window.__hasGeneratedGrid = true;
+    if (window.__updateExportSavAvailability) window.__updateExportSavAvailability();
+
+    metaLine.textContent = `Imported from "${fileName}" · ${cols}×${rows} tiles · showing the save's current ground map.`;
+  };
 
   function doExport(){
     if (!currentGrid) return;
@@ -918,6 +1456,15 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+
+    showToast('✅ JSON exported for TomoDraft.', 'success');
+    showRedirectModal({
+      title: 'Exported!',
+      message: 'Your island JSON has been downloaded. Continue to TomoDraft to start placing paths and buildings?',
+      stayLabel: 'Stay here',
+      continueLabel: 'Go to TomoDraft →',
+      url: 'https://www.tomodraft.io/'
+    });
   }
 
   // ---------------- Mouse & Touch Viewport Interactions ----------------
